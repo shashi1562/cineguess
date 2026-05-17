@@ -1,0 +1,180 @@
+:root {
+  --bg: #0a0a12;
+  --surface: #13131f;
+  --surface2: #1c1c2e;
+  --surface3: #252540;
+  --border: #2d2d4a;
+  --accent: #8b5cf6;
+  --accent-light: #a78bfa;
+  --accent-glow: rgba(139, 92, 246, 0.25);
+  --correct: #22c55e;
+  --correct-bg: rgba(34, 197, 94, 0.15);
+  --wrong: #ef4444;
+  --wrong-bg: rgba(239, 68, 68, 0.15);
+  --warn: #f59e0b;
+  --text: #f1f5f9;
+  --text-muted: #94a3b8;
+  --text-dim: #64748b;
+  --radius: 12px;
+  --radius-sm: 8px;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html,
+body {
+  height: 100%;
+}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Poppins', sans-serif;
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  overflow-x: hidden;
+}
+
+#app {
+  width: 100%;
+  max-width: 680px;
+  min-height: 100vh;
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+}
+
+button {
+  font-family: 'Poppins', sans-serif;
+  cursor: pointer;
+  border: none;
+  outline: none;
+}
+
+button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+input {
+  font-family: 'Poppins', sans-serif;
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, var(--accent), #6d28d9);
+  color: #fff;
+  font-size: 1rem;
+  font-weight: 600;
+  padding: 0.75rem 2rem;
+  border-radius: 50px;
+  transition: all 0.2s;
+  box-shadow: 0 4px 20px var(--accent-glow);
+  width: 100%;
+  max-width: 320px;
+}
+
+.btn-primary:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 28px var(--accent-glow);
+}
+
+.btn-primary:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.btn-secondary {
+  background: var(--surface2);
+  color: var(--text-muted);
+  font-size: 0.9rem;
+  font-weight: 500;
+  padding: 0.6rem 1.5rem;
+  border-radius: 50px;
+  border: 1px solid var(--border);
+  transition: all 0.2s;
+}
+
+.btn-secondary:hover:not(:disabled) {
+  background: var(--surface3);
+  color: var(--text);
+  border-color: var(--accent);
+}
+
+/* Screen transitions */
+.screen-enter-active,
+.screen-leave-active {
+  transition: opacity 0.25s ease, transform 0.25s ease;
+}
+
+.screen-enter-from {
+  opacity: 0;
+  transform: translateY(16px);
+}
+
+.screen-leave-to {
+  opacity: 0;
+  transform: translateY(-16px);
+}
+
+/* ── Keyframe animations ─────────────────────────────────────────────────── */
+
+/* Letter reveal — flip + scale pop */
+@keyframes revealLetter {
+  0% {
+    transform: scale(0.4) rotateY(90deg);
+    opacity: 0;
+  }
+  70% {
+    transform: scale(1.15) rotateY(-5deg);
+  }
+  100% {
+    transform: scale(1) rotateY(0deg);
+    opacity: 1;
+  }
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  20% { transform: translateX(-8px); }
+  40% { transform: translateX(8px); }
+  60% { transform: translateX(-5px); }
+  80% { transform: translateX(5px); }
+}
+
+@keyframes pulse-glow {
+  0%, 100% { box-shadow: 0 0 0 0 var(--accent-glow); }
+  50% { box-shadow: 0 0 0 8px transparent; }
+}
+
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.3; }
+}
+
+@keyframes bounce-in {
+  0% { transform: scale(0.8); opacity: 0; }
+  60% { transform: scale(1.06); }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+/* Heart beat used for danger timer icon */
+@keyframes heartbeat {
+  0%, 100% { transform: scale(1); }
+  14% { transform: scale(1.2); }
+  28% { transform: scale(1); }
+  42% { transform: scale(1.15); }
+  56% { transform: scale(1); }
+}
+
+/* Floating keyframe for home logo */
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
+}

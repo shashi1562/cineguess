@@ -1,24 +1,155 @@
-I'm a self-taught passionate FrontEnd developer from India 🇮🇳
+# CineGuess 🎬
 
-       👋 Hi there, I'm Shashi,
-       
-       💼 FrontEnd Engineer with 3+ years of experience.
-  
-       ❤️ Passionate about building responsive, scalable and user-friendly web applications.
-  
-       📫 How to reach me shashi.lokini@gmail.com
+A multiplayer movie name guessing game — Hangman-style, cinema-themed, built with Vue 3.
 
-About Me
+Guess a hidden movie title letter by letter. 6 lives. Race the clock. Challenge a friend online or battle the bot.
 
-💻 Specializing in Vue.js ecosystem
+---
 
-📱 Experienced in Ionic Framework for hybrid mobile apps
+## Features
 
-🎨 Skilled in UI frameworks like Bootstrap, Vuetify, Vuesax and custom responsive designs
+- **Online Multiplayer** — Create a room, share a 6-character code, play with a friend on any device in real time (Firebase Realtime Database)
+- **vs Bot** — Two sub-modes:
+  - *You Guess* — Bot picks a mystery movie, you crack it
+  - *Bot Guesses* — You set a movie, watch the bot attempt it letter by letter
+- **6 Languages** — English, Hindi, Telugu, Tamil, Kannada, Malayalam (200+ movies total)
+- **Sound Effects** — Procedural Web Audio API sounds: correct guess, wrong guess, victory fanfare, defeat melody, countdown ticks
+- **Physical Keyboard** — Type A–Z directly on desktop; keys animate on press
+- **Countdown Timer** — 2.5 min per letter; red pulse + tick sounds in final 20 seconds
+- **Confetti** — Canvas-based particle celebration on wins
+- **Haptic Feedback** — Vibration patterns on correct/wrong guesses (mobile)
+- **Mute Toggle** — Silence sounds any time during the game
+- **Rematch** — Play Again in online mode drops both players back to role selection without creating a new room
 
-🛠 Strong understanding of JavaScript, DOM manipulation, and performance optimization
+---
 
-🔧 Familiar with Git for version control and team collaboration
-  
-Languages and Tools
-<p align="left"> <a href="https://vuejs.org/" target="_blank" rel="noreferrer"> <img src="https://raw.githubusercontent.com/devicons/devicon/master/icons/vuejs/vuejs-original-wordmark.svg" alt="vuejs" width="40" height="40"/> </a> <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript" target="_blank" rel="noreferrer"> <img src="https://raw.githubusercontent.com/devicons/devicon/master/icons/javascript/javascript-original.svg" alt="javascript" width="40" height="40"/> </a> </a> <a href="https://getbootstrap.com/" target="_blank" rel="noreferrer"> <img src="https://raw.githubusercontent.com/devicons/devicon/master/icons/bootstrap/bootstrap-plain-wordmark.svg" alt="bootstrap" width="40" height="40"/> </a> <a href="https://www.w3.org/html/" target="_blank" rel="noreferrer"> <img src="https://raw.githubusercontent.com/devicons/devicon/master/icons/html5/html5-original-wordmark.svg" alt="html5" width="40" height="40"/> </a> <a href="https://www.w3schools.com/css/" target="_blank" rel="noreferrer"> <img src="https://raw.githubusercontent.com/devicons/devicon/master/icons/css3/css3-original-wordmark.svg" alt="css3" width="40" height="40"/> </a> <a href="https://git-scm.com/" target="_blank" rel="noreferrer"> <img src="https://raw.githubusercontent.com/devicons/devicon/master/icons/git/git-original-wordmark.svg" alt="git" width="40" height="40"/> </a> </p>
+## Tech Stack
+
+| Layer | Technology |
+|---|---|
+| Framework | Vue 3 (Composition API, `<script setup>`) |
+| State | Pinia |
+| Build | Vite 5 |
+| Backend | Firebase Realtime Database |
+| Styles | Scoped CSS + CSS custom properties |
+| Sounds | Web Audio API (no external files) |
+
+---
+
+## Getting Started
+
+### Prerequisites
+
+- Node.js 18+
+- A Firebase project with Realtime Database enabled
+
+### Install
+
+```bash
+npm install
+```
+
+### Configure Firebase
+
+Create `src/firebase.js` with your project config:
+
+```js
+import { initializeApp } from 'firebase/app'
+import { getDatabase } from 'firebase/database'
+
+const app = initializeApp({
+  apiKey: '...',
+  authDomain: '...',
+  databaseURL: '...',
+  projectId: '...',
+  storageBucket: '...',
+  messagingSenderId: '...',
+  appId: '...',
+})
+
+export const db = getDatabase(app)
+```
+
+### Run
+
+```bash
+npm run dev       # development server
+npm run build     # production build
+npm run preview   # preview production build
+```
+
+---
+
+## Game Modes
+
+### Online
+1. One player creates a room → shares the 6-character code
+2. Friend joins with the code
+3. Creator picks who guesses
+4. Setter enters a movie name (password-masked input)
+5. Guesser clicks letters on the QWERTY keyboard (or types them)
+6. 6 lives, 2.5-minute timer per guess
+7. **Play Again** keeps the room alive and returns both players to role selection instantly
+
+### vs Bot — You Guess
+- Select a language → bot picks a random movie from that language's pool
+- You guess letters; bot never makes mistakes picking the word
+
+### vs Bot — Bot Guesses
+- You enter any movie name → bot guesses a random letter every 1.4 seconds
+- Watch the bot's progress; each guess shows ✅ Correct / ❌ Wrong
+
+---
+
+## Project Structure
+
+```
+src/
+├── components/
+│   ├── HomeScreen.vue       # Mode selection (Online, vs Bot)
+│   ├── OnlineScreen.vue     # Room lobby — create/join, role select, movie entry
+│   ├── SetupScreen.vue      # Language picker + movie entry for local modes
+│   ├── GameScreen.vue       # Main gameplay — keyboard, timer, lives, word display
+│   └── ResultScreen.vue     # Round result + confetti
+├── stores/
+│   └── game.js              # Pinia store — all game state + Firebase sync
+├── data/
+│   └── movies.js            # 200+ movies across 6 languages
+├── sounds.js                # Web Audio API sound engine
+├── firebase.js              # Firebase initialisation
+└── style.css                # Global CSS variables + keyframes
+```
+
+---
+
+## Firebase Database Rules (recommended)
+
+```json
+{
+  "rules": {
+    "rooms": {
+      "$roomId": {
+        ".read": true,
+        ".write": true
+      }
+    }
+  }
+}
+```
+
+For production, scope writes to authenticated users or add rate limiting.
+
+---
+
+## Movie Pool Bot Data
+
+| Language | Movies |
+|---|---|
+| English | 39 |
+| Hindi | 31 |
+| Telugu | 30 |
+| Tamil | 29 |
+| Kannada | 20 |
+| Malayalam | 25 |
+
+Movies span a wide difficulty range — classic titles to recent blockbusters.
