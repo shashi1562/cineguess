@@ -74,6 +74,15 @@
           </div>
         </div>
         <p v-if="errorMsg" class="error">{{ errorMsg }}</p>
+        <div class="hint-field">
+          <input
+            v-model="hintValue"
+            type="text"
+            placeholder="💡 Add a hint (optional) — revealed after 50% guessed"
+            class="hint-input"
+            maxlength="80"
+          />
+        </div>
         <button type="submit" class="btn-primary" :disabled="!inputValue.trim()">
           Lock In 🔒
         </button>
@@ -139,6 +148,7 @@ const LANG_EMOJI = {
 const store = useGameStore()
 const step = ref('language')
 const inputValue = ref('')
+const hintValue = ref('')
 const errorMsg = ref('')
 const inputRef = ref(null)
 
@@ -173,7 +183,7 @@ function lockIn() {
   if (!val) { errorMsg.value = 'Please enter a movie name'; return }
   if (val.length < 2) { errorMsg.value = 'Movie name is too short'; return }
   if (!/[a-zA-Z]/.test(val)) { errorMsg.value = 'Must contain at least one letter'; return }
-  store.lockInMovie(val)
+  store.lockInMovie(val, hintValue.value)
   step.value = 'handoff'
 }
 </script>
@@ -348,6 +358,27 @@ function lockIn() {
   width: 0.9rem;
   text-align: center;
 }
+
+.hint-field { width: 100%; }
+
+.hint-input {
+  width: 100%;
+  background: rgba(245, 158, 11, 0.05);
+  border: 1px solid rgba(245, 158, 11, 0.25);
+  border-radius: var(--radius-sm);
+  color: #fcd34d;
+  font-size: 0.88rem;
+  font-weight: 400;
+  padding: 0.7rem 1rem;
+  transition: border-color 0.2s;
+  font-family: inherit;
+}
+.hint-input:focus {
+  outline: none;
+  border-color: rgba(245, 158, 11, 0.6);
+  box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.08);
+}
+.hint-input::placeholder { color: rgba(245, 158, 11, 0.45); font-size: 0.82rem; }
 
 .error {
   color: var(--wrong);

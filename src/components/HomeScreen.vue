@@ -7,11 +7,21 @@
     </header>
 
     <div class="mode-grid">
-      <!-- Online -->
+      <!-- Group Play -->
+      <button class="mode-card flat-card group-card" @click="goGroup">
+        <span class="mode-icon">🎭</span>
+        <div class="mode-text">
+          <h2>Group Play</h2>
+          <p>Up to 6 players — everyone guesses on their own private board</p>
+        </div>
+        <span class="mode-badge group-badge">New</span>
+      </button>
+
+      <!-- 2 Player -->
       <button class="mode-card flat-card online-card" @click="goOnline">
         <span class="mode-icon">🌐</span>
         <div class="mode-text">
-          <h2>Online</h2>
+          <h2>2 Player</h2>
           <p>Play with a friend on another device using a room code</p>
         </div>
         <span class="mode-badge online-badge">Live</span>
@@ -78,6 +88,11 @@ function selectBotMode(sub) {
 function goOnline() {
   soundClick()
   store.goOnline()
+}
+
+function goGroup() {
+  soundClick()
+  store.goGroup()
 }
 
 function toggleBot() {
@@ -240,6 +255,17 @@ h1 {
   background: rgba(34, 197, 94, 0.12);
   border-color: var(--correct);
   color: var(--correct);
+}
+
+.group-card:hover {
+  border-color: #f59e0b;
+  box-shadow: 0 8px 30px rgba(245, 158, 11, 0.1);
+}
+
+.group-badge {
+  background: rgba(245, 158, 11, 0.12);
+  border-color: rgba(245, 158, 11, 0.5);
+  color: #fcd34d;
 }
 
 /* Bot sub-options */

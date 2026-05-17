@@ -9,6 +9,12 @@
           {{ store.languageLabel }}
         </span>
         <span class="guesser-tag">{{ store.guesserName }} Guessing</span>
+        <span
+          v-if="store.mode === 'online'"
+          class="presence-dot"
+          :class="store.opponentPresent ? 'online' : 'offline'"
+          :title="store.opponentPresent ? 'Friend online' : 'Friend offline'"
+        />
       </div>
 
       <button
@@ -48,23 +54,27 @@
       <span class="lives-label">{{ store.lives }} / 6</span>
     </div>
 
-    <!-- Word display -->
+    <!-- Hint banner — appears when 50% letters guessed -->
+    <Transition name="hint-slide">
+      <div v-if="store.hintRevealed" class="hint-banner">
+        <span class="hint-icon">💡</span>
+        <div class="hint-body">
+          <span class="hint-label">Hint unlocked</span>
+          <span class="hint-text">{{ store.hint }}</span>
+        </div>
+      </div>
+    </Transition>
+
+    <!-- Word display (grouped by word — prevents mid-word line breaks) -->
     <div class="word-display">
-      <TransitionGroup name="reveal">
-        <template v-for="(item, i) in store.displayWord" :key="i">
-          <span v-if="item.type === 'space'" class="word-space" />
-          <span v-else-if="item.type === 'special'" class="letter-box special">
-            {{ item.char }}
-          </span>
-          <span
-            v-else
-            class="letter-box"
-            :class="{ revealed: item.shown }"
-          >
+      <div v-for="(wordGroup, wi) in displayWordGroups" :key="wi" class="word-group">
+        <template v-for="(item, i) in wordGroup" :key="wi + '-' + i">
+          <span v-if="item.type === 'special'" class="letter-box special">{{ item.char }}</span>
+          <span v-else class="letter-box" :class="{ revealed: item.shown }">
             <span class="letter-inner">{{ item.shown ? item.char : '' }}</span>
           </span>
         </template>
-      </TransitionGroup>
+      </div>
     </div>
 
     <!-- Word info row -->
@@ -82,6 +92,19 @@
       <span v-for="l in store.wrongGuesses" :key="l" class="wrong-chip">
         {{ l.toUpperCase() }}
       </span>
+    </div>
+
+    <!-- Reveal lifeline (guesser only, one-time use) -->
+    <div v-if="store.playerIsGuessing && !store.isGameOver" class="lifeline-row">
+      <button
+        class="reveal-btn"
+        :disabled="store.revealUsed || store.lives <= 1"
+        @click="store.revealLetter()"
+      >
+        <span>💡</span>
+        <span>{{ store.revealUsed ? 'Lifeline used' : 'Reveal a letter' }}</span>
+        <span v-if="!store.revealUsed" class="reveal-cost">−1 ❤️</span>
+      </button>
     </div>
 
     <!-- Online: watching indicator for the setter -->
@@ -179,6 +202,22 @@ const timerDisplay = computed(() => {
   const m = Math.floor(store.timer / 60)
   const s = store.timer % 60
   return m > 0 ? `${m}:${String(s).padStart(2, '0')}` : `${s}s`
+})
+
+// Group displayWord by word so flex-wrap never breaks in the middle of a word
+const displayWordGroups = computed(() => {
+  const groups = []
+  let current = []
+  for (const item of store.displayWord) {
+    if (item.type === 'space') {
+      if (current.length) groups.push(current)
+      current = []
+    } else {
+      current.push(item)
+    }
+  }
+  if (current.length) groups.push(current)
+  return groups
 })
 
 const dangerState = computed(
@@ -449,34 +488,104 @@ function handleKeyClick(letter) {
   font-weight: 600;
 }
 
+/* Presence dot */
+.presence-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  display: inline-block;
+}
+.presence-dot.online {
+  background: var(--correct);
+  box-shadow: 0 0 0 2px rgba(34, 197, 94, 0.3);
+  animation: pulse-presence 2s ease infinite;
+}
+.presence-dot.offline { background: var(--wrong); opacity: 0.7; }
+
+@keyframes pulse-presence {
+  0%, 100% { box-shadow: 0 0 0 2px rgba(34, 197, 94, 0.3); }
+  50% { box-shadow: 0 0 0 5px rgba(34, 197, 94, 0); }
+}
+
+/* Hint banner */
+.hint-banner {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  background: rgba(245, 158, 11, 0.07);
+  border: 1px solid rgba(245, 158, 11, 0.35);
+  border-radius: var(--radius-sm);
+  padding: 0.65rem 1rem;
+}
+.hint-icon { font-size: 1.1rem; flex-shrink: 0; }
+.hint-body { display: flex; flex-direction: column; gap: 0.1rem; }
+.hint-label {
+  font-size: 0.6rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: #f59e0b;
+  font-weight: 700;
+}
+.hint-text { font-size: 0.88rem; color: #fcd34d; font-weight: 500; }
+
+.hint-slide-enter-active { transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1); }
+.hint-slide-enter-from { opacity: 0; transform: translateY(-10px) scale(0.97); }
+
+/* Reveal lifeline */
+.lifeline-row { display: flex; justify-content: center; }
+.reveal-btn {
+  background: rgba(245, 158, 11, 0.07);
+  border: 1px solid rgba(245, 158, 11, 0.35);
+  color: #fbbf24;
+  padding: 0.42rem 1.1rem;
+  border-radius: 50px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  transition: all 0.2s;
+  font-family: inherit;
+  cursor: pointer;
+  min-height: 34px;
+}
+.reveal-btn:hover:not(:disabled) {
+  background: rgba(245, 158, 11, 0.15);
+  border-color: #f59e0b;
+  transform: translateY(-1px);
+}
+.reveal-btn:disabled { opacity: 0.35; cursor: not-allowed; }
+.reveal-cost { opacity: 0.7; font-size: 0.7rem; }
+
 /* Word display */
 .word-display {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
+  gap: 10px 8px;
   justify-content: center;
-  padding: 1rem 0 0.25rem;
-  min-height: 80px;
+  padding: 0.75rem 0 0.25rem;
+  min-height: 72px;
   align-items: flex-end;
 }
 
-.word-space {
-  width: 14px;
-  display: inline-block;
+.word-group {
+  display: flex;
+  gap: clamp(4px, 1.4vw, 7px);
+  flex-shrink: 0;
 }
 
 .letter-box {
-  width: 34px;
-  height: 46px;
+  width: clamp(26px, 7.8vw, 34px);
+  height: clamp(36px, 9.5vw, 46px);
   border-bottom: 3px solid var(--border);
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 1.2rem;
+  font-size: clamp(0.85rem, 2.8vw, 1.2rem);
   font-weight: 700;
   border-radius: 4px 4px 0 0;
   transition: all 0.3s;
-  position: relative;
 }
 
 .letter-box.special {
@@ -619,7 +728,7 @@ function handleKeyClick(letter) {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 7px;
+  gap: clamp(4px, 1.2vw, 7px);
   margin-top: 0.25rem;
 }
 
@@ -630,18 +739,19 @@ function handleKeyClick(letter) {
 
 .key-row {
   display: flex;
-  gap: 5px;
+  gap: clamp(3px, 0.9vw, 5px);
 }
 
 .key {
-  width: 34px;
-  height: 44px;
+  width: clamp(24px, 8.2vw, 34px);
+  height: clamp(38px, 10vw, 44px);
   border-radius: 6px;
-  font-size: 0.8rem;
+  font-size: clamp(0.62rem, 1.9vw, 0.8rem);
   font-weight: 700;
   letter-spacing: 0;
   transition: background 0.15s, border-color 0.15s, transform 0.08s, box-shadow 0.08s;
   border: 1px solid transparent;
+  font-family: inherit;
 }
 
 .key.idle {
@@ -762,25 +872,8 @@ function handleKeyClick(letter) {
   50% { opacity: 0.65; }
 }
 
-@media (max-width: 400px) {
-  .key {
-    width: 27px;
-    height: 38px;
-    font-size: 0.7rem;
-  }
-
-  .key-row {
-    gap: 3px;
-  }
-
-  .keyboard {
-    gap: 4px;
-  }
-
-  .letter-box {
-    width: 28px;
-    height: 38px;
-    font-size: 1rem;
-  }
+@media (max-width: 380px) {
+  .game-screen { gap: 0.75rem; padding: 0.5rem 0 1rem; }
+  .game-meta { gap: 0.3rem; }
 }
 </style>

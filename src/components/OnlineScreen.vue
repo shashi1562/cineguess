@@ -6,7 +6,7 @@
       <button class="back-btn" @click="store.goHome()">← Home</button>
       <div class="hero">
         <div class="hero-icon">🌐</div>
-        <h2>Online Multiplayer</h2>
+        <h2>2 Player</h2>
         <p>Play with a friend on another device in real time</p>
       </div>
       <div class="choices">
@@ -25,6 +25,7 @@
           </div>
         </button>
       </div>
+
     </div>
 
     <!-- Creating room spinner -->
@@ -61,6 +62,7 @@
         <div class="lobby-icon">✅</div>
         <h2>Friend joined!</h2>
         <p>Room: <strong class="code-inline">{{ store.roomCode }}</strong></p>
+        <div class="presence-pill online"><span class="presence-pulse" />Friend is here</div>
         <p class="role-q">Who should guess the movie?</p>
         <div class="role-choices">
           <button class="role-card" @click="store.chooseRoles(true)">
@@ -171,6 +173,15 @@
           </div>
         </div>
         <p v-if="movieError" class="error-msg">{{ movieError }}</p>
+        <div class="hint-field">
+          <input
+            v-model="hintInput"
+            type="text"
+            placeholder="💡 Add a hint (optional) — revealed after 50% guessed"
+            class="hint-input"
+            maxlength="80"
+          />
+        </div>
         <button type="submit" class="btn-primary" :disabled="!movieInput.trim() || locking">
           {{ locking ? 'Locking in…' : 'Lock In Movie 🔒' }}
         </button>
@@ -182,6 +193,10 @@
       <div class="lobby-card">
         <div class="lobby-icon">🔒</div>
         <h2>Movie Locked!</h2>
+        <div class="presence-pill" :class="store.opponentPresent ? 'online' : 'offline'">
+          <span v-if="store.opponentPresent" class="presence-pulse" />
+          {{ store.opponentPresent ? 'Friend online' : 'Friend offline' }}
+        </div>
         <p>Waiting for your friend to start the game…</p>
         <div class="thinking-dots">
           <span class="dot" /><span class="dot" /><span class="dot" />
@@ -195,6 +210,10 @@
       <div class="lobby-card">
         <div class="lobby-icon">🎬</div>
         <h2>Almost there!</h2>
+        <div class="presence-pill" :class="store.opponentPresent ? 'online' : 'offline'">
+          <span v-if="store.opponentPresent" class="presence-pulse" />
+          {{ store.opponentPresent ? 'Friend online' : 'Friend offline' }}
+        </div>
         <p>Waiting for your friend to pick a movie…</p>
         <div class="thinking-dots">
           <span class="dot" /><span class="dot" /><span class="dot" />
@@ -208,6 +227,10 @@
       <div class="lobby-card">
         <div class="lobby-icon">🎮</div>
         <h2>Movie is set!</h2>
+        <div class="presence-pill" :class="store.opponentPresent ? 'online' : 'offline'">
+          <span v-if="store.opponentPresent" class="presence-pulse" />
+          {{ store.opponentPresent ? 'Friend online' : 'Friend offline' }}
+        </div>
         <p>Your friend picked a mystery movie. Ready to guess?</p>
         <button class="btn-primary start-btn" @click="startGame">
           🚀 Start Guessing!
@@ -239,6 +262,7 @@ const LANG_EMOJI = {
 const store = useGameStore()
 const step = ref('menu')
 const movieInput = ref('')
+const hintInput = ref('')
 const movieError = ref('')
 const locking = ref(false)
 const joinCode = ref('')
@@ -318,7 +342,7 @@ async function lockMovie() {
   if (!/[a-zA-Z]/.test(val)) { movieError.value = 'Must contain at least one letter'; return }
   locking.value = true
   try {
-    await store.lockOnlineMovie(store.selectedLanguage, val)
+    await store.lockOnlineMovie(store.selectedLanguage, val, hintInput.value)
     // step transitions to 'locked' via the movieLocked watcher
   } catch {
     movieError.value = 'Failed to lock movie. Check your connection and try again.'
@@ -657,6 +681,55 @@ function leaveAndGoHome() {
   color: var(--wrong);
   font-size: 0.85rem;
   text-align: center;
+}
+
+/* Hint field */
+.hint-field { width: 100%; }
+.hint-input {
+  width: 100%;
+  background: rgba(245, 158, 11, 0.05);
+  border: 1px solid rgba(245, 158, 11, 0.25);
+  border-radius: var(--radius-sm);
+  color: #fcd34d;
+  font-size: 0.85rem;
+  padding: 0.65rem 1rem;
+  transition: border-color 0.2s;
+  font-family: inherit;
+}
+.hint-input:focus { outline: none; border-color: rgba(245, 158, 11, 0.55); box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.08); }
+.hint-input::placeholder { color: rgba(245, 158, 11, 0.4); font-size: 0.8rem; }
+
+/* Presence pill */
+.presence-pill {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 0.3rem 0.8rem;
+  border-radius: 50px;
+}
+.presence-pill.online {
+  background: rgba(34, 197, 94, 0.1);
+  border: 1px solid rgba(34, 197, 94, 0.35);
+  color: var(--correct);
+}
+.presence-pill.offline {
+  background: rgba(239, 68, 68, 0.08);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  color: var(--wrong);
+}
+.presence-pulse {
+  width: 7px;
+  height: 7px;
+  background: var(--correct);
+  border-radius: 50%;
+  flex-shrink: 0;
+  animation: pulse-p 2s ease infinite;
+}
+@keyframes pulse-p {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(34,197,94,0.4); }
+  50% { box-shadow: 0 0 0 4px rgba(34,197,94,0); }
 }
 
 @media (max-width: 380px) {
