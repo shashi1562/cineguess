@@ -141,7 +141,7 @@ For production, scope writes to authenticated users or add rate limiting.
 
 ---
 
-## Movie Pool Bot Data
+## Movie Pool
 
 | Language | Movies |
 |---|---|
