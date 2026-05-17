@@ -1,5 +1,7 @@
 # CineGuess 🎬
 
+🔴 **[Play Live → shashi1562.github.io/cineguess](https://shashi1562.github.io/cineguess/)**
+
 A multiplayer movie name guessing game — Hangman-style, cinema-themed, built with Vue 3.
 
 Guess a hidden movie title letter by letter. 6 lives. Race the clock. Challenge a friend online or battle the bot.
